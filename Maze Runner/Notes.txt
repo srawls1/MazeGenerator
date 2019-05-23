@@ -1,0 +1,3 @@
+- Have a monster pursuing you
+- Make you go through multiple times; the next time through, the items you picked up the previous time are gone.
+- Frogger-style moving blocks and platforms.
