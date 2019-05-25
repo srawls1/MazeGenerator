@@ -151,10 +151,10 @@ public class PriorityQueue<T> : ICollection<T> where T : IComparable<T>
 		int index = startIndex;
 		T walkingItem = data[index];
 
-		while (startIndex < Count)
+		while (index < Count)
 		{
-			int leftChild = startIndex * 2 + 1;
-			int rightChild = startIndex * 2 + 2;
+			int leftChild = index * 2 + 1;
+			int rightChild = index * 2 + 2;
 
 			if (leftChild >= Count)
 			{

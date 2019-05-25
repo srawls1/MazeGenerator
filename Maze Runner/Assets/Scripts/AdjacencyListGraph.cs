@@ -80,7 +80,7 @@ public class AdjacencyListGraph<T> : IGraph<T>
 {
 	#region Private Variables
 
-	ICollection<AdjListGraphNode<T>> nodes;
+	IDictionary<AdjListGraphNode<T>, AdjListGraphNode<T>> nodes;
 	ICollection<AdjListGraphEdge<T>> edges;
 
 	#endregion Private Variables
@@ -91,7 +91,7 @@ public class AdjacencyListGraph<T> : IGraph<T>
 	{
 		get
 		{
-			foreach (AdjListGraphNode<T> node in nodes)
+			foreach (AdjListGraphNode<T> node in nodes.Keys)
 			{
 				yield return node;
 			}
@@ -125,7 +125,7 @@ public class AdjacencyListGraph<T> : IGraph<T>
 
 	public AdjacencyListGraph()
     {
-        nodes = new HashSet<AdjListGraphNode<T>>();
+        nodes = new Dictionary<AdjListGraphNode<T>, AdjListGraphNode<T>>();
 		edges = new List<AdjListGraphEdge<T>>();
     }
 
@@ -136,14 +136,14 @@ public class AdjacencyListGraph<T> : IGraph<T>
 	public IGraphNode<T> AddNode(T elem)
 	{
 		AdjListGraphNode<T> node = new AdjListGraphNode<T>(elem);
-		nodes.Add(node);
+		nodes.Add(node, node);
 		return node;
 	}
 
 	public IGraphNode<T> GetNode(T elem)
 	{
 		AdjListGraphNode<T> node = new AdjListGraphNode<T>(elem);
-		if (nodes.Contains(node))
+		if (nodes.TryGetValue(node, out node))
 		{
 			return node;
 		}
@@ -172,8 +172,8 @@ public class AdjacencyListGraph<T> : IGraph<T>
 		AdjListGraphNode<T> node1 = n1 as AdjListGraphNode<T>;
 		AdjListGraphNode<T> node2 = n2 as AdjListGraphNode<T>;
 
-		Debug.Assert(nodes.Contains(node1));
-		Debug.Assert(nodes.Contains(node2));
+		Debug.Assert(nodes.ContainsKey(node1));
+		Debug.Assert(nodes.ContainsKey(node2));
 
 		AdjListGraphEdge<T> edge = new AdjListGraphEdge<T>(node1, node2, weight);
 		edges.Add(edge);
@@ -188,8 +188,8 @@ public class AdjacencyListGraph<T> : IGraph<T>
 		AdjListGraphNode<T> node1 = n1 as AdjListGraphNode<T>;
 		AdjListGraphNode<T> node2 = n2 as AdjListGraphNode<T>;
 
-		Debug.Assert(nodes.Contains(node1));
-		Debug.Assert(nodes.Contains(node2));
+		Debug.Assert(nodes.ContainsKey(node1));
+		Debug.Assert(nodes.ContainsKey(node2));
 
 		AdjListGraphEdge<T> edge = new AdjListGraphEdge<T>(node1, node2, weight);
 
@@ -206,8 +206,8 @@ public class AdjacencyListGraph<T> : IGraph<T>
 		AdjListGraphNode<T> node1 = n1 as AdjListGraphNode<T>;
 		AdjListGraphNode<T> node2 = n2 as AdjListGraphNode<T>;
 
-		Debug.Assert(nodes.Contains(node1));
-		Debug.Assert(nodes.Contains(node2));
+		Debug.Assert(nodes.ContainsKey(node1));
+		Debug.Assert(nodes.ContainsKey(node2));
 
 		return node1.edges.Find((edge) => edge.node2.Equals(node2));
 	}

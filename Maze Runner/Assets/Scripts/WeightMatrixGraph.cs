@@ -191,6 +191,7 @@ public class WeightMatrixGraph<T> : IGraph<T>
 		WeightMatrixNode<T> n1 = node1 as WeightMatrixNode<T>;
 		WeightMatrixNode<T> n2 = node2 as WeightMatrixNode<T>;
 
+		++EdgeCount;
 		weights[n1.index, n2.index] = weight;
 		return new WeightMatrixEdge<T>(n1, n2, weight);
 	}
@@ -203,6 +204,7 @@ public class WeightMatrixGraph<T> : IGraph<T>
 		WeightMatrixNode<T> n1 = node1 as WeightMatrixNode<T>;
 		WeightMatrixNode<T> n2 = node2 as WeightMatrixNode<T>;
 
+		++EdgeCount;
 		weights[n1.index, n2.index] = weight;
 		weights[n2.index, n1.index] = weight;
 		return new WeightMatrixEdge<T>(n1, n2, weight);
