@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Collections;
+using System.Text;
 using System.Collections.Generic;
 
 public class PriorityQueue<T> : ICollection<T> where T : IComparable<T>
@@ -43,14 +44,14 @@ public class PriorityQueue<T> : ICollection<T> where T : IComparable<T>
 	public T Peek()
 	{
 		Debug.Assert(Count > 0);
-		
+
 		return data[0];
 	}
 
 	public T Pop()
 	{
 		Debug.Assert(Count > 0);
-		
+
 		T ret = data[0];
 		indices.Remove(ret);
 		data[0] = data[--Count];
@@ -205,8 +206,26 @@ public class PriorityQueue<T> : ICollection<T> where T : IComparable<T>
 			}
 		}
 
-		data[startIndex] = walkingItem;
+		data[index] = walkingItem;
 		indices[data[index]] = index;
+	}
+
+	public override string ToString()
+	{
+		StringBuilder s = new StringBuilder('[');
+		bool commaNeeded = false;
+		for (int i = 0; i < Count; ++i)
+		{
+			if (commaNeeded)
+			{
+				s.Append(',');
+			}
+			s.Append(data[i].ToString());
+			commaNeeded = true;
+		}
+
+		s.Append(']');
+		return s.ToString();
 	}
 
 	#endregion // Private Functions

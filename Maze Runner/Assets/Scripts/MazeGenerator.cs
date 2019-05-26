@@ -10,12 +10,26 @@ public class MazeGenerator : MonoBehaviour
 
 	private void Start()
 	{
-		GameObject floor = Instantiate(floorPrefab, new Vector3((float)(size - 1) / 2, 0, (float)(size - 1) / 2), Quaternion.identity);
+		GameObject floor = Instantiate(floorPrefab,
+			new Vector3((float)(size - 1) / 2, 0, (float)(size - 1) / 2),
+			Quaternion.identity);
 		floor.transform.localScale = new Vector3(size, .5f, size);
 
 		IGraph<Vector2> graph = new AdjacencyListGraph<Vector2>();
 		HashSet<IGraphEdge<Vector2>> mazeTree = GetMazeTree(graph);
+		DebugDrawTree(mazeTree);
 		PlaceWalls(graph, mazeTree);
+	}
+
+	private void DebugDrawTree(HashSet<IGraphEdge<Vector2>> mazeTree)
+	{
+		foreach (IGraphEdge<Vector2> edge in mazeTree)
+		{
+			Vector3 p1 = new Vector3(edge.node1.storedData.x, 5, edge.node1.storedData.y);
+			Vector3 p2 = new Vector3(edge.node2.storedData.x, 5, edge.node2.storedData.y);
+			Debug.DrawLine(p1, p2, Color.red, 60f);
+		}
+		Debug.Log(mazeTree.Count);
 	}
 
 	private void PlaceWalls(IGraph<Vector2> graph, HashSet<IGraphEdge<Vector2>> mazeTree)
@@ -74,7 +88,7 @@ public class MazeGenerator : MonoBehaviour
 
 	private HashSet<IGraphEdge<Vector2>> GetMazeTree(IGraph<Vector2> graph)
 	{
-		
+
 		IGraphNode<Vector2>[,] nodes = new IGraphNode<Vector2>[size, size];
 
 		for (int y = 0; y < size; ++y)
@@ -100,7 +114,7 @@ public class MazeGenerator : MonoBehaviour
 			}
 		}
 
-		IMSTStrategy<Vector2> strategy = new KruskalsAlgorithm<Vector2>();
+		IMSTStrategy<Vector2> strategy = new PrimsAlgorithm<Vector2>();
 
 		return new HashSet<IGraphEdge<Vector2>>(strategy.MinimumSpanningTree(graph));
 	}

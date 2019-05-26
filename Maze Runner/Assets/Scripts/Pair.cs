@@ -12,6 +12,11 @@ public class Pair<T, U>
 
 	public T First;
 	public U Second;
+
+	public override string ToString()
+	{
+		return "(" + First.ToString() + ',' + Second.ToString() + ")";
+	}
 }
 
 public class ComparablePair<T, U> : Pair<T, U>, IComparable<ComparablePair<T, U>> where T : IComparable<T>

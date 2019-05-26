@@ -37,7 +37,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657868, g: 0.49641263, b: 0.57481706, a: 1}
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
@@ -271,7 +271,7 @@ MonoBehaviour:
   wallPrefab: {fileID: 1979634179117738, guid: 90a92089c3e40ec4182d3311053a0f86, type: 2}
   floorPrefab: {fileID: 1710801180879538, guid: c06e40ed024096a4da36bef844b40eaa,
     type: 2}
-  size: 8
+  size: 16
 --- !u!4 &1578794496
 Transform:
   m_ObjectHideFlags: 0

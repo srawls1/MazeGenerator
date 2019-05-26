@@ -31,6 +31,11 @@ public class AdjListGraphNode<T> : IGraphNode<T>
 	{
 		return storedData.GetHashCode();
 	}
+
+	public override string ToString()
+	{
+		return storedData.ToString();
+	}
 }
 
 #endregion // Node Class
@@ -44,12 +49,14 @@ public class AdjListGraphEdge<T> : IGraphEdge<T>
 	private AdjListGraphNode<T> m_node1;
 	private AdjListGraphNode<T> m_node2;
 
+	public bool undirected { get; private set; }
     public IGraphNode<T> node1 { get { return m_node1; } }
     public IGraphNode<T> node2 { get { return m_node2; } }
     public float weight { get; private set; }
 
-    public AdjListGraphEdge(AdjListGraphNode<T> n1, AdjListGraphNode<T> n2, float w)
+    public AdjListGraphEdge(AdjListGraphNode<T> n1, AdjListGraphNode<T> n2, float w, bool directionless)
     {
+		undirected = directionless;
         m_node1 = n1;
         m_node2 = n2;
         weight = w;
@@ -60,18 +67,33 @@ public class AdjListGraphEdge<T> : IGraphEdge<T>
         if (obj is AdjListGraphEdge<T>)
         {
             AdjListGraphEdge<T> edge = obj as AdjListGraphEdge<T>;
-            return node1.Equals(edge.node1) && node2.Equals(edge.node2);
+            if (node1.Equals(edge.node1) && node2.Equals(edge.node2))
+			{
+				return true;
+			}
+			if (undirected && node1.Equals(edge.node2) && node2.Equals(edge.node1))
+			{
+				return true;
+			}
         }
-        else
-        {
-            return false;
-        }
+
+		return false;
     }
 
     public override int GetHashCode()
     {
+		if (undirected)
+		{
+			return node1.GetHashCode() * node2.GetHashCode();
+		}
+
         return node1.GetHashCode() * prime + node2.GetHashCode();
     }
+
+	public override string ToString()
+	{
+		return "<" + node1.ToString() + ',' + node2.ToString() + ">";
+	}
 }
 
 #endregion // Edge Class
@@ -175,7 +197,7 @@ public class AdjacencyListGraph<T> : IGraph<T>
 		Debug.Assert(nodes.ContainsKey(node1));
 		Debug.Assert(nodes.ContainsKey(node2));
 
-		AdjListGraphEdge<T> edge = new AdjListGraphEdge<T>(node1, node2, weight);
+		AdjListGraphEdge<T> edge = new AdjListGraphEdge<T>(node1, node2, weight, false);
 		edges.Add(edge);
 		node1.edges.Add(edge);
 		return edge;
@@ -191,10 +213,10 @@ public class AdjacencyListGraph<T> : IGraph<T>
 		Debug.Assert(nodes.ContainsKey(node1));
 		Debug.Assert(nodes.ContainsKey(node2));
 
-		AdjListGraphEdge<T> edge = new AdjListGraphEdge<T>(node1, node2, weight);
+		AdjListGraphEdge<T> edge = new AdjListGraphEdge<T>(node1, node2, weight, true);
 
 		node1.edges.Add(edge);
-		node2.edges.Add(new AdjListGraphEdge<T>(node2, node1, weight));
+		node2.edges.Add(new AdjListGraphEdge<T>(node2, node1, weight, true));
 		edges.Add(edge);
 		return edge;
 	}

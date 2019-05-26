@@ -35,6 +35,11 @@ public class WeightMatrixNode<T> : IGraphNode<T>
 	{
 		return index;
 	}
+
+	public override string ToString()
+	{
+		return storedData.ToString();
+	}
 }
 
 #endregion // Node Class
@@ -48,15 +53,17 @@ public class WeightMatrixEdge<T> : IGraphEdge<T>
 	private WeightMatrixNode<T> m_node1;
 	private WeightMatrixNode<T> m_node2;
 
+	internal bool undirected { get; private set; }
 	public IGraphNode<T> node1 { get { return m_node1; } }
 	public IGraphNode<T> node2 { get { return m_node2; } }
 	public float weight { get; private set; }
 
-	public WeightMatrixEdge(WeightMatrixNode<T> n1, WeightMatrixNode<T> n2, float w)
+	public WeightMatrixEdge(WeightMatrixNode<T> n1, WeightMatrixNode<T> n2, float w, bool bidirectional)
 	{
 		m_node1 = n1;
 		m_node2 = n2;
 		weight = w;
+		undirected = bidirectional;
 	}
 
 	public override bool Equals(object obj)
@@ -64,8 +71,14 @@ public class WeightMatrixEdge<T> : IGraphEdge<T>
 		if (obj is WeightMatrixEdge<T>)
 		{
 			WeightMatrixEdge<T> edge = obj as WeightMatrixEdge<T>;
-			return m_node1.index == edge.m_node1.index &&
-				m_node2.index == edge.m_node2.index;
+			if (node1.Equals(edge.node1) && node2.Equals(edge.node2))
+			{
+				return true;
+			}
+			if (undirected && node1.Equals(edge.node2) && node2.Equals(edge.node1))
+			{
+				return true;
+			}
 		}
 
 		return false;
@@ -73,7 +86,16 @@ public class WeightMatrixEdge<T> : IGraphEdge<T>
 
 	public override int GetHashCode()
 	{
+		if (undirected)
+		{
+			return m_node1.index * m_node2.index;
+		}
 		return m_node1.index * prime + m_node2.index;
+	}
+
+	public override string ToString()
+	{
+		return "<" + node1.ToString() + ',' + node2.ToString() + ">";
 	}
 }
 
@@ -106,7 +128,7 @@ public class WeightMatrixGraph<T> : IGraph<T>
 				for (int j = 0; j < weights.GetLength(1); ++j)
 				{
 					WeightMatrixNode<T> n2 = new WeightMatrixNode<T>(j, nodeValues[j]);
-					yield return new WeightMatrixEdge<T>(n1, n2, weights[i, j]);
+					yield return new WeightMatrixEdge<T>(n1, n2, weights[i, j], weights[i, j] == weights[j, i]);
 				}
 			}
 		}
@@ -178,7 +200,7 @@ public class WeightMatrixGraph<T> : IGraph<T>
 			if (weights[i, j] < Mathf.Infinity)
 			{
 				WeightMatrixNode<T> n2 = new WeightMatrixNode<T>(j, nodeValues[j]);
-				yield return new WeightMatrixEdge<T>(n1, n2, weights[i, j]);
+				yield return new WeightMatrixEdge<T>(n1, n2, weights[i, j], weights[i, j] == weights[j, i]);
 			}
 		}
 	}
@@ -193,7 +215,7 @@ public class WeightMatrixGraph<T> : IGraph<T>
 
 		++EdgeCount;
 		weights[n1.index, n2.index] = weight;
-		return new WeightMatrixEdge<T>(n1, n2, weight);
+		return new WeightMatrixEdge<T>(n1, n2, weight, false);
 	}
 
 	public IGraphEdge<T> AddUndirectedEdge(IGraphNode<T> node1, IGraphNode<T> node2, float weight = 1)
@@ -207,7 +229,7 @@ public class WeightMatrixGraph<T> : IGraph<T>
 		++EdgeCount;
 		weights[n1.index, n2.index] = weight;
 		weights[n2.index, n1.index] = weight;
-		return new WeightMatrixEdge<T>(n1, n2, weight);
+		return new WeightMatrixEdge<T>(n1, n2, weight, true);
 	}
 
 	public IGraphEdge<T> GetEdge(IGraphNode<T> node1, IGraphNode<T> node2)
@@ -224,7 +246,7 @@ public class WeightMatrixGraph<T> : IGraph<T>
 			return null;
 		}
 
-		return new WeightMatrixEdge<T>(n1, n2, weight);
+		return new WeightMatrixEdge<T>(n1, n2, weight, weight == weights[n2.index, n1.index]);
 	}
 
 	#endregion // Public Functions
