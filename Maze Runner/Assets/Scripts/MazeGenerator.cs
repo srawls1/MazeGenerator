@@ -114,7 +114,7 @@ public class MazeGenerator : MonoBehaviour
 			}
 		}
 
-		IMSTStrategy<Vector2> strategy = new PrimsAlgorithm<Vector2>();
+		IMSTStrategy<Vector2> strategy = new KruskalsAlgorithm<Vector2>();
 
 		return new HashSet<IGraphEdge<Vector2>>(strategy.MinimumSpanningTree(graph));
 	}
