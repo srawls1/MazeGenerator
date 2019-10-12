@@ -2,8 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
+public class ItemSpawnFrequency
+{
+	public float frequency;
+	public Item item;
+}
+
 public class MazeGenerator : MonoBehaviour
 {
+	[SerializeField] private ItemSpawnFrequency[] itemSpawns;
 	[SerializeField] private GameObject wallPrefab;
 	[SerializeField] private GameObject floorPrefab;
 	[SerializeField] private int size;
@@ -15,41 +23,47 @@ public class MazeGenerator : MonoBehaviour
 			Quaternion.identity);
 		floor.transform.localScale = new Vector3(size, .5f, size);
 
-		IGraph<Vector2> graph = new AdjacencyListGraph<Vector2>();
-		HashSet<IGraphEdge<Vector2>> mazeTree = GetMazeTree(graph);
-		DebugDrawTree(mazeTree);
-		PlaceWalls(graph, mazeTree);
+		IGraph<Vector2> graph = GetMazeGraph();
+		PlaceWalls(graph);
+		PlaceItems(graph);
 	}
 
-	private void DebugDrawTree(HashSet<IGraphEdge<Vector2>> mazeTree)
+	private void PlaceItems(IGraph<Vector2> graph)
 	{
-		foreach (IGraphEdge<Vector2> edge in mazeTree)
+		Pair<float, Item>[] spawnFrequencies = new Pair<float, Item>[itemSpawns.Length];
+		for (int i = 0; i < itemSpawns.Length; ++i)
 		{
-			Vector3 p1 = new Vector3(edge.node1.storedData.x, 5, edge.node1.storedData.y);
-			Vector3 p2 = new Vector3(edge.node2.storedData.x, 5, edge.node2.storedData.y);
-			Debug.DrawLine(p1, p2, Color.red, 60f);
+			spawnFrequencies[i] = new Pair<float, Item>(itemSpawns[i].frequency, itemSpawns[i].item);
 		}
-		Debug.Log(mazeTree.Count);
+
+		ItemFactory factory = new ItemFactory(graph, spawnFrequencies);
+		for (int y = 0; y < size; ++y)
+		{
+			for (int x = 0; x < size; ++x)
+			{
+				factory.decideSpawn(new Vector2(x, y));
+			}
+		}
 	}
 
-	private void PlaceWalls(IGraph<Vector2> graph, HashSet<IGraphEdge<Vector2>> mazeTree)
+	private void PlaceWalls(IGraph<Vector2> graph)
 	{
 		for (int i = 1; i < size; ++i)
 		{
 			IGraphNode<Vector2> n1 = graph.GetNode(new Vector2(i - 1, 0));
 			IGraphNode<Vector2> n2 = graph.GetNode(new Vector2(i, 0));
 			IGraphEdge<Vector2> edge = graph.GetEdge(n1, n2);
-			if (!mazeTree.Contains(edge))
+			if (edge == null)
 			{
-				PlaceWall(edge);
+				PlaceWall(n1, n2);
 			}
 
 			n1 = graph.GetNode(new Vector2(0, i - 1));
 			n2 = graph.GetNode(new Vector2(0, i));
 			edge = graph.GetEdge(n1, n2);
-			if (!mazeTree.Contains(edge))
+			if (edge == null)
 			{
-				PlaceWall(edge);
+				PlaceWall(n1, n2);
 			}
 		}
 
@@ -60,35 +74,35 @@ public class MazeGenerator : MonoBehaviour
 				IGraphNode<Vector2> n1 = graph.GetNode(new Vector2(y - 1, x));
 				IGraphNode<Vector2> n2 = graph.GetNode(new Vector2(y, x));
 				IGraphEdge<Vector2> edge = graph.GetEdge(n1, n2);
-				if (!mazeTree.Contains(edge))
+				if (edge == null)
 				{
-					PlaceWall(edge);
+					PlaceWall(n1, n2);
 				}
 
 				n1 = graph.GetNode(new Vector2(y, x - 1));
 				n2 = graph.GetNode(new Vector2(y, x));
 				edge = graph.GetEdge(n1, n2);
-				if (!mazeTree.Contains(edge))
+				if (edge == null)
 				{
-					PlaceWall(edge);
+					PlaceWall(n1, n2);
 				}
 			}
 		}
 	}
 
-	private void PlaceWall(IGraphEdge<Vector2> edge)
+	private void PlaceWall(IGraphNode<Vector2> node1, IGraphNode<Vector2> node2)
 	{
-		Vector3 p1 = new Vector3(edge.node1.storedData.x, 2, edge.node1.storedData.y);
-		Vector3 p2 = new Vector3(edge.node2.storedData.x, 2, edge.node2.storedData.y);
+		Vector3 p1 = new Vector3(node1.storedData.x, 2, node1.storedData.y);
+		Vector3 p2 = new Vector3(node2.storedData.x, 2, node2.storedData.y);
 		Vector3 midpoint = 0.5f * (p1 + p2);
 		Quaternion rot = Quaternion.FromToRotation(Vector3.right, p2 - p1);
 
 		GameObject wall = Instantiate(wallPrefab, midpoint, rot);
 	}
 
-	private HashSet<IGraphEdge<Vector2>> GetMazeTree(IGraph<Vector2> graph)
+	private IGraph<Vector2> GetMazeGraph()
 	{
-
+		IGraph<Vector2> graph = new AdjacencyListGraph<Vector2>();
 		IGraphNode<Vector2>[,] nodes = new IGraphNode<Vector2>[size, size];
 
 		for (int y = 0; y < size; ++y)
@@ -115,7 +129,6 @@ public class MazeGenerator : MonoBehaviour
 		}
 
 		IMSTStrategy<Vector2> strategy = new KruskalsAlgorithm<Vector2>();
-
-		return new HashSet<IGraphEdge<Vector2>>(strategy.MinimumSpanningTree(graph));
+		return new MSTResultGraph<Vector2>(graph, strategy);
 	}
 }

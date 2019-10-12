@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 public class DistToLeafVisitor<T> : IGraphVisitor<T>
 {
@@ -21,7 +23,8 @@ public class DistToLeafVisitor<T> : IGraphVisitor<T>
 		foreach (IGraphEdge<T> edge in graph.GetEdges(node))
 		{
 			int dist;
-			if (distsFromLeafs.TryGetValue(node, out dist) && dist < minDist)
+			IGraphNode<T> otherNode = node == edge.node1 ? edge.node2 : edge.node1;
+			if (distsFromLeafs.TryGetValue(otherNode, out dist) && dist < minDist)
 			{
 				minDist = dist;
 			}
@@ -32,7 +35,18 @@ public class DistToLeafVisitor<T> : IGraphVisitor<T>
 			minDist = 0;
 		}
 
-		distsFromLeafs[node] = minDist;
+		distsFromLeafs[node] = minDist + 1;
+	}
+
+	private void PrintDistanceDictionary()
+	{
+		Debug.Log(string.Format("[{0}]",
+			string.Join(", ", distsFromLeafs.Select((distanceEntry) =>
+				string.Format("{{ {0} => {1} }}",
+					distanceEntry.Key.storedData.ToString(),
+					distanceEntry.Value)
+			))
+		));
 	}
 
 	public int GetDistFromLeaf(IGraphNode<T> node)
